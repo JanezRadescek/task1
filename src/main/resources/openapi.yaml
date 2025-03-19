@@ -1,0 +1,62 @@
+openapi: 3.0.0
+info:
+    title: Tax API
+    version: 1.0.0
+
+
+paths:
+    /api/tax:
+        post:
+            tags:
+                - Tax
+            summary: Calculate tax
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/TaxRequest'
+            responses:
+                '200':
+                    description: Tax calculated successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/TaxResponse'
+
+components:
+    schemas:
+        TaxRequest:
+            type: object
+            properties:
+                traderId:
+                    type: integer
+                    description: Unique identifier for the trader
+                playedAmount:
+                    type: number
+                    description: Amount played
+                odd:
+                    type: number
+                    description: Odds value
+            required:
+                - traderId
+                - playedAmount
+                - odd
+        TaxResponse:
+            type: object
+            properties:
+                possibleReturnAmount:
+                    type: number
+                    description: Possible return amount
+                possibleReturnAmountBefTax:
+                    type: number
+                    description: Possible return amount before tax
+                possibleReturnAmountAfterTax:
+                    type: number
+                    description: Possible return amount after tax
+                taxRate:
+                    type: number
+                    description: Tax rate
+                taxAmount:
+                    type: number
+                    description: Calculated tax amount
