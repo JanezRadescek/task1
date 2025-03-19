@@ -1,8 +1,8 @@
-package si.janez;
+package si.janez.resources;
 
 import io.quarkus.test.junit.QuarkusIntegrationTest;
 
 @QuarkusIntegrationTest
-class ExampleResourceIT extends ExampleResourceTest {
+class TaxResourceIT extends TaxResourceTest {
     // Execute the same tests but in packaged mode.
 }

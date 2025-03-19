@@ -1,0 +1,7 @@
+class TaxResponse {
+  possibleReturnAmount: 42,
+  possibleReturnAmountBefTax: 42,
+  possibleReturnAmountAfterTax: 42,
+  taxRate: 50,
+  taxAmount: 3
+}
