@@ -1,0 +1,7 @@
+{
+  "possibleReturnAmount": 16.00,
+  "possibleReturnAmountBefTax": 16.00,
+  "possibleReturnAmountAfterTax": 14.00,
+  "taxRate": 0.125,
+  "taxAmount": 2.00
+}

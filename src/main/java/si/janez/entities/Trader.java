@@ -11,7 +11,6 @@ public class Trader {
     public long id;
     @Enumerated(EnumType.STRING)
     public TaxType taxType;
-
     public BigDecimal taxRate;
     public BigDecimal taxAmount;
 }

@@ -12,10 +12,8 @@ public class TaxService {
 
     @Inject
     TraderRepository traderRepository;
-
     @Inject
     GeneralRate generalRate;
-
     @Inject
     GeneralAmount generalAmount;
     @Inject

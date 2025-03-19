@@ -1,5 +1,6 @@
 package si.janez.services.tax;
 
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import si.janez.api.model.TaxRequest;
 import si.janez.api.model.TaxResponse;
@@ -7,6 +8,7 @@ import si.janez.entities.Trader;
 
 import java.math.BigDecimal;
 
+@ApplicationScoped
 public class WinningsRate implements  TaxCalculator{
 
     @Inject
