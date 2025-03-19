@@ -1,22 +1,23 @@
 package si.janez.resources;
 
 import io.quarkus.logging.Log;
+import jakarta.inject.Inject;
 import si.janez.api.TaxApi;
 import si.janez.api.model.TaxRequest;
 import si.janez.api.model.TaxResponse;
-
-import java.math.BigDecimal;
+import si.janez.services.tax.TaxService;
 
 public class TaxResource implements TaxApi {
+
+    @Inject
+    TaxService taxService;
+
     @Override
     public TaxResponse apiTaxPost(TaxRequest taxRequest) {
-        Log.info("apiTaxPost");
-        Log.info("taxRequest: " + taxRequest);
-        return new TaxResponse()
-                .possibleReturnAmount(new BigDecimal(42))
-                .possibleReturnAmountBefTax(new BigDecimal(42))
-                .possibleReturnAmountAfterTax(new BigDecimal(42))
-                .taxRate(new BigDecimal(50))
-                .taxAmount(new BigDecimal(3));
+        Log.info("Request: " + taxRequest);
+        //NOT DOIN mapping to domain model, because the mapping would be identity function
+        var response = taxService.calculateTax(taxRequest);
+        Log.info("Response: " + response);
+        return response;
     }
 }

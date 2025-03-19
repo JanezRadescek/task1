@@ -31,6 +31,7 @@ components:
             properties:
                 traderId:
                     type: integer
+                    format: int64
                     description: Unique identifier for the trader
                 playedAmount:
                     type: number
@@ -45,6 +46,7 @@ components:
         TaxResponse:
             type: object
             properties:
+#               # Extra field???
                 possibleReturnAmount:
                     type: number
                     description: Possible return amount
