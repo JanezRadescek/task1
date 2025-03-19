@@ -4,7 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import si.janez.api.model.TaxRequest;
 import si.janez.api.model.TaxResponse;
-import si.janez.entities.Trader;
+import si.janez.entities.tax.Trader;
 
 @ApplicationScoped
 public class GeneralRate implements TaxCalculator {

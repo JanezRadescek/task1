@@ -3,7 +3,7 @@ package si.janez.services.tax;
 import jakarta.enterprise.context.ApplicationScoped;
 import si.janez.api.model.TaxRequest;
 import si.janez.api.model.TaxResponse;
-import si.janez.entities.Trader;
+import si.janez.entities.tax.Trader;
 
 import java.math.RoundingMode;
 
