@@ -50,6 +50,19 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/Error'
 
+    /api/match/processing:
+        get:
+            tags:
+                - Match
+            summary: Checks if any match in processing queue
+            responses:
+                '200':
+                    description:  match in processing queue
+                    content:
+                        application/json:
+                            schema:
+                                type: boolean
+
 
 
 components:

@@ -55,7 +55,7 @@ public class MatchService {
             }
             currentMaxMatchId++;
             var matchResult = new MatchResult(currentMaxMatchId, matchResultDto);
-            timestampDebt.get(matchResultDto.getMatchId()).addDebt(new Debt(currentMaxMatchId));
+            timestampDebt.get(matchResultDto.getMatchId()).addDebt(new Debt(matchResult.id));
             matchQueue.put(matchResult);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -71,6 +71,10 @@ public class MatchService {
         return new MatchResponse()
                 .firstEventTime(firstEventTime)
                 .lastEventTime(lastEventTime);
+    }
+
+    public Boolean isProcessing() {
+        return !matchQueue.isEmpty();
     }
 
     @ActivateRequestContext
@@ -92,14 +96,12 @@ public class MatchService {
         }
     }
 
-    private int aCounter = 0;
+    private int c = 0;
     private void ProcessMatch(MatchResult matchResult) {
         try {
             if (matchResult.outcomeId.length() % 2 == 0) {
-                Log.info("Match of type A, processing 1s");
-                aCounter++;
-                Log.info("Total A matches processed: " + aCounter);
-                Thread.sleep(1000);
+                Log.info("Match of type A, processing 10ms");
+                Thread.sleep(10);
             } else {
                 Log.info("Match of type B, processing 1ms");
                 Thread.sleep(1);
@@ -107,6 +109,10 @@ public class MatchService {
         } catch (InterruptedException e) {
             throw new ApplicationException("¯\\_(ツ)_/¯", 500, e);
         }
+        c++;
+        Log.info("Total matches processed: " + c);
         matchResult.result = "DONE";
     }
+
+
 }

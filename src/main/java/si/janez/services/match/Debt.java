@@ -5,6 +5,6 @@ public class Debt {
     public Debt(long id){
         this.id = id;
     }
-    public Long id;
+    public long id;
     public boolean processed = false;
 }

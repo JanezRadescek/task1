@@ -35,4 +35,13 @@ public class MatchResource implements MatchApi {
         Log.info("ApiMatchGet : matchResponse = " + matchResponse);
         return matchResponse;
     }
+
+    @Override
+    public Boolean apiMatchProcessingGet() {
+        Log.info("ApiMatchProcessingGet");
+        var processing = matchService.isProcessing();
+        Log.info("ApiMatchProcessingGet : processing = " + processing);
+        return processing;
+
+    }
 }

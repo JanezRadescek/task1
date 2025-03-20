@@ -51,7 +51,10 @@ public class MatchLedger {
             readyIds.add(first.id);
         }
 
-        Log.debug("Found readyIds : " + readyIds);
+        Log.debug("Found ready Ids : " + readyIds + " unready ids size : " + debts.size());
+        if(readyIds.isEmpty()){
+            return;
+        }
         Instant baseTime = Instant.now();
         List<MatchResult> results = matchRepository.list("id in ?1", readyIds);
         for (int i = 0; i < results.size(); i++) {

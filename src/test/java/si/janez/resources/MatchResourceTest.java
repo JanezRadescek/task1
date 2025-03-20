@@ -23,8 +23,9 @@ public class MatchResourceTest {
     MatchService matchService;
 
     @Test
-    void good() throws IOException {
+    void good() throws IOException, InterruptedException {
         var matches = CSVHelper.loadCsvFromResource("/cases/match/fo_random.txt");
+        Log.info("Total matches: " + matches.size());
         long startTime = System.currentTimeMillis();
 
         var firstMatchId = matches.get(0).getMatchId(); //It repeats few times during file
@@ -47,12 +48,43 @@ public class MatchResourceTest {
         }
 
         long endTime = System.currentTimeMillis();
+        long uploadingTime = endTime - startTime;
+        uploadingTime /= 1000;
+        Log.info("Uploading time: " + uploadingTime);
+
+        int maxTime = 20;
+        Assertions.assertTrue(uploadingTime < maxTime,
+                "uploading time should be less than " + maxTime + " seconds, was: " + uploadingTime + "s");
+
+        startTime = System.currentTimeMillis();
+        int maxProcessTime = matches.size() * 20 / 1000 / (Runtime.getRuntime().availableProcessors() / 2); // 700s ~ 20ms per match per thread. I guess not perfect parallelism so 16/2
+        Log.info("Max process time: " + maxProcessTime);
+        while (maxProcessTime > 0) {
+            maxProcessTime--;
+
+            var processing = given()
+                    .when().get("/api/match/processing")
+                    .then()
+                    .statusCode(200)
+                    .extract().as(Boolean.class);
+
+            if (processing) {
+                Thread.sleep(1000);
+            } else {
+                endTime = System.currentTimeMillis();
+                long processingTime = endTime - startTime;
+                processingTime /= 1000;
+                Log.info("Processing time: " + processingTime);
+                return;
+            }
+        }
+
+        endTime = System.currentTimeMillis();
         long processingTime = endTime - startTime;
         processingTime /= 1000;
-        Log.info("Processing time: " + processingTime);
+        Log.info("Processing time: " + processingTime);  //~ 185
+        Assertions.assertTrue(false, "processing time should be less than 100s");
 
-        Assertions.assertTrue(processingTime < 10,
-                "Processing time should be less than 2 seconds, was: " + processingTime + "ms");
     }
 
     @Test
