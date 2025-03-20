@@ -92,11 +92,13 @@ public class MatchService {
         }
     }
 
-
+    private int aCounter = 0;
     private void ProcessMatch(MatchResult matchResult) {
         try {
-            if (matchResult.outcomeId % 2 == 0) {
+            if (matchResult.outcomeId.length() % 2 == 0) {
                 Log.info("Match of type A, processing 1s");
+                aCounter++;
+                Log.info("Total A matches processed: " + aCounter);
                 Thread.sleep(1000);
             } else {
                 Log.info("Match of type B, processing 1ms");

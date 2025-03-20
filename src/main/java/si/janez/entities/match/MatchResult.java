@@ -23,7 +23,7 @@ public class MatchResult {
 
     public Long matchId;
     public Long marketId;
-    public Long outcomeId;
+    public String outcomeId;
     public String specifiers;
 
 

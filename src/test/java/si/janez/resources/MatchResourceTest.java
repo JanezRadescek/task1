@@ -1,5 +1,6 @@
 package si.janez.resources;
 
+import io.quarkus.logging.Log;
 import io.quarkus.test.junit.QuarkusTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.Assertions;
@@ -7,6 +8,7 @@ import org.junit.jupiter.api.Test;
 import si.janez.api.model.Error;
 import si.janez.api.model.MatchResponse;
 import si.janez.dtos.match.MatchResultDto;
+import si.janez.helper.CSVHelper;
 import si.janez.helper.JsonHelper;
 import si.janez.services.match.MatchService;
 
@@ -21,8 +23,36 @@ public class MatchResourceTest {
     MatchService matchService;
 
     @Test
-    void good() {
+    void good() throws IOException {
+        var matches = CSVHelper.loadCsvFromResource("/cases/match/fo_random.txt");
+        long startTime = System.currentTimeMillis();
 
+        var firstMatchId = matches.get(0).getMatchId(); //It repeats few times during file
+        for (var match : matches) {
+            matchService.ProcessMatch(match);
+
+            if (match.getMatchId() == firstMatchId) {
+                new Thread(() -> {
+                    var response = given()
+                            .queryParam("matchId", firstMatchId)
+                            .when().get("/api/match")
+                            .then()
+                            .statusCode(200)
+                            .extract().as(MatchResponse.class);
+
+                    Assertions.assertNotNull(response.getFirstEventTime());
+                    Assertions.assertEquals(response.getFirstEventTime(), response.getLastEventTime());
+                });
+            }
+        }
+
+        long endTime = System.currentTimeMillis();
+        long processingTime = endTime - startTime;
+        processingTime /= 1000;
+        Log.info("Processing time: " + processingTime);
+
+        Assertions.assertTrue(processingTime < 10,
+                "Processing time should be less than 2 seconds, was: " + processingTime + "ms");
     }
 
     @Test

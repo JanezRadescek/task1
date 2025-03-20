@@ -1,20 +1,18 @@
 package si.janez.dtos.match;
 
+import si.janez.exceptions.ApplicationException;
+
 public class MatchResultDto {
-
-    private final static String prefix = "sr:match:";
-    private final static int prefixLength = prefix.length();
-
     private String matchId;
     public Long marketId;
-    public Long outcomeId;
+    public String outcomeId;
     public String specifiers;
 
     public void setMatchId(String matchId) {
         this.matchId = matchId;
     }
 
-    public String getMatchIdString(){
+    public String getMatchIdString() {
         return matchId;
     }
 
@@ -23,6 +21,14 @@ public class MatchResultDto {
     }
 
     public static long parseMatchId(String matchId) {
-        return Long.parseLong(matchId.substring(prefixLength));
+        var parts = matchId.split(":");
+        var prefix = switch (parts[1]) {
+            case "match" -> "1";
+            case "simple_tournament" -> "2";
+            case "stage" -> "3";
+            case "season" -> "4";
+            default -> throw new ApplicationException("Invalid match id: " + matchId);
+        };
+        return Long.parseLong(prefix + parts[2]);
     }
 }
