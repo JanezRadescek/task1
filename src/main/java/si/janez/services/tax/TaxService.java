@@ -5,6 +5,7 @@ import jakarta.inject.Inject;
 import jakarta.ws.rs.NotFoundException;
 import si.janez.api.model.TaxRequest;
 import si.janez.api.model.TaxResponse;
+import si.janez.exceptions.ApplicationException;
 import si.janez.repositories.TraderRepository;
 
 @ApplicationScoped
@@ -25,7 +26,7 @@ public class TaxService {
 
         var trader = traderRepository.findById(taxRequest.getTraderId());
         if (trader == null)
-            throw new NotFoundException(String.format("Trader with ID %d not found", taxRequest.getTraderId()));
+            throw new ApplicationException(String.format("Trader with ID %d not found", taxRequest.getTraderId()), 404);
 
         return switch (trader.taxType) {
             case GENERAL_RATE -> generalRate.calculateTax(taxRequest, trader);

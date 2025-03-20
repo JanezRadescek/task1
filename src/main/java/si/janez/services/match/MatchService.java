@@ -4,11 +4,16 @@ import io.quarkus.logging.Log;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.control.ActivateRequestContext;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
+import si.janez.api.model.MatchResponse;
 import si.janez.dtos.match.MatchResultDto;
 import si.janez.entities.match.MatchResult;
+import si.janez.exceptions.ApplicationException;
 import si.janez.repositories.MatchRepository;
 
+import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -23,17 +28,19 @@ public class MatchService {
     MatchRepository matchRepository;
 
     Map<Long, MatchLedger> timestampDebt = new HashMap();
-    private BlockingQueue<MatchResult> matchQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<MatchResult> matchQueue = new LinkedBlockingQueue<>();
     private final int threadCount = Runtime.getRuntime().availableProcessors();
-    private ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
+    private final ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
 
-    private static long id = 0; // Not good
+    private static long currentMaxMatchId = 0; // Not good
 
     @PostConstruct
     public void init() {
         for (int i = 0; i < threadCount; i++) {
             executorService.submit(this::processQueueItems);
         }
+
+        currentMaxMatchId = matchRepository.getMaxMatchId();
     }
 
     @PreDestroy
@@ -43,12 +50,12 @@ public class MatchService {
 
     public void ProcessMatch(MatchResultDto matchResultDto) {
         try {
-            if (!timestampDebt.containsKey(matchResultDto.matchId)) {
-                timestampDebt.put(matchResultDto.matchId, new MatchLedger());
+            if (!timestampDebt.containsKey(matchResultDto.getMatchId())) {
+                timestampDebt.put(matchResultDto.getMatchId(), new MatchLedger());
             }
-            id++;
-            var matchResult = new MatchResult(id, matchResultDto);
-            timestampDebt.get(matchResultDto.matchId).addDebt(new Debt(id));
+            currentMaxMatchId++;
+            var matchResult = new MatchResult(currentMaxMatchId, matchResultDto);
+            timestampDebt.get(matchResultDto.getMatchId()).addDebt(new Debt(currentMaxMatchId));
             matchQueue.put(matchResult);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -56,16 +63,28 @@ public class MatchService {
         }
     }
 
+    @Transactional
+    public MatchResponse getMatchDetails(String matchId) {
+        var matchIdlong = MatchResultDto.parseMatchId(matchId);
+        Instant firstEventTime = matchRepository.getFirstEvent(matchIdlong);
+        Instant lastEventTime = matchRepository.getLastEvent(matchIdlong);
+        return new MatchResponse()
+                .firstEventTime(firstEventTime)
+                .lastEventTime(lastEventTime);
+    }
 
-    private void processQueueItems() {
+    @ActivateRequestContext
+    protected void processQueueItems() {
         while (!Thread.currentThread().isInterrupted()) {
             try {
                 MatchResult match = matchQueue.take(); //blocking if empty
+                Log.debug("took match from queue: " + match.matchId);
                 ProcessMatch(match);
+                Log.debug("processed match : " + match.matchId);
                 timestampDebt.get(match.matchId).settleDebt(match, matchRepository);
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
-                Log.info("Match processor thread interrupted");
+                Log.error("Match processor thread interrupted");
                 break;
             } catch (Exception e) {
                 Log.error("Error processing match", e); //TODO better error handling
@@ -84,7 +103,7 @@ public class MatchService {
                 Thread.sleep(1);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            throw new ApplicationException("¯\\_(ツ)_/¯", 500, e);
         }
         matchResult.result = "DONE";
     }

@@ -24,8 +24,45 @@ paths:
                             schema:
                                 $ref: '#/components/schemas/TaxResponse'
 
+    /api/match:
+        get:
+            tags:
+                - Match
+            summary: Get match details
+            parameters:
+                -   name: matchId
+                    in: query
+                    description: Unique identifier for the match
+                    required: true
+                    schema:
+                        type: string
+            responses:
+                '200':
+                    description: Match details retrieved successfully
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/MatchResponse'
+                '404':
+                    description: Match not found
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Error'
+
+
+
 components:
     schemas:
+        Error:
+            type: object
+            properties:
+                code:
+                    type: integer
+                    format: int32
+                message:
+                    type: string
+
         TaxRequest:
             type: object
             properties:
@@ -62,3 +99,15 @@ components:
                 taxAmount:
                     type: number
                     description: Calculated tax amount
+
+        MatchResponse:
+            type: object
+            properties:
+                firstEventTime:
+                    type: string
+                    format: instant
+                    description: Instant of first processed event belonging to match
+                lastEventTime:
+                    type: string
+                    format: instant
+                    description: Instant of last processed event  belonging to match
