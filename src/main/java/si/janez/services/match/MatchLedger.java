@@ -1,5 +1,6 @@
 package si.janez.services.match;
 
+import io.quarkus.logging.Log;
 import io.quarkus.narayana.jta.QuarkusTransaction;
 import si.janez.entities.match.MatchResult;
 import si.janez.repositories.MatchRepository;
@@ -23,9 +24,19 @@ public class MatchLedger {
                 break;
             }
         }
+        Log.debug("Marked debt as settled for matchId: " + matchResult.id);
         QuarkusTransaction.begin();
-        settleDebtInRepo(matchResult, matchRepository);
-        QuarkusTransaction.commit();
+        try {
+            Log.debug("Starting DB : " + matchResult.id);
+            settleDebtInRepo(matchResult, matchRepository);
+            Log.debug("Ending DB : " + matchResult.id);
+            QuarkusTransaction.commit();
+        } finally {
+            if (QuarkusTransaction.isActive()) {
+                QuarkusTransaction.rollback();
+            }
+        }
+
     }
 
 
@@ -40,6 +51,7 @@ public class MatchLedger {
             readyIds.add(first.id);
         }
 
+        Log.debug("Found readyIds : " + readyIds);
         Instant baseTime = Instant.now();
         List<MatchResult> results = matchRepository.list("id in ?1", readyIds);
         for (int i = 0; i < results.size(); i++) {

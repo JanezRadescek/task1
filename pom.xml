@@ -113,6 +113,12 @@
                                 <useJakartaEe>true</useJakartaEe>
                                 <useTags>true</useTags>
                             </configOptions>
+
+                            <typeMappings>
+                                <typeMapping>string+instant=Instant</typeMapping>
+                            </typeMappings>
+                            <importMappings>Instant=java.time.Instant</importMappings>
+
                         </configuration>
                     </execution>
                 </executions>
