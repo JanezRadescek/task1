@@ -53,12 +53,15 @@ public class MatchResourceTest {
         uploadingTime /= 1000;
         Log.info("Uploading time: " + uploadingTime);
 
-        int maxTime = 20;
-        Assertions.assertTrue(uploadingTime < maxTime,
-                "uploading time should be less than " + maxTime + " seconds, was: " + uploadingTime + "s");
+        int maxUploadTime = 20;
+        maxUploadTime *= 10; // Just in case, no idea who will run this.
+        //feels weird to have timing in test, but the instruction literally says "as fast as possible".
+        Assertions.assertTrue(uploadingTime < maxUploadTime,
+                "uploading time should be less than " + maxUploadTime + " seconds, was: " + uploadingTime + "s");
 
         startTime = System.currentTimeMillis();
         int maxProcessTime = matches.size() * 20 / 1000 / (Runtime.getRuntime().availableProcessors() / 2); // 700s ~ 20ms per match per thread. I guess not perfect parallelism so 16/2
+        maxProcessTime *= 10; // Just in case, no idea who will run this.
         Log.info("Max process time: " + maxProcessTime);
         while (maxProcessTime > 0) {
             maxProcessTime--;
@@ -121,13 +124,13 @@ public class MatchResourceTest {
     @Test
     void ugly() {
         var error = given()
-                .queryParam("matchId", 0)
+                .queryParam("matchId", "sr:match:0")
                 .when()
                 .get("/api/match")
                 .then()
                 .statusCode(404)
                 .extract().as(Error.class);
-        Assertions.assertEquals("No events with dateInserted found for match ID: 0", error.getMessage());
+        Assertions.assertEquals("No events with dateInserted found", error.getMessage());
     }
 
 

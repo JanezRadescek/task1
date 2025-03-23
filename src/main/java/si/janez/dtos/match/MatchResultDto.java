@@ -20,6 +20,7 @@ public class MatchResultDto {
         return parseMatchId(matchId);
     }
 
+    // Example id sr:match:13762991
     public static long parseMatchId(String matchId) {
         var parts = matchId.split(":");
         var prefix = switch (parts[1]) {

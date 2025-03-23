@@ -25,11 +25,11 @@ public class MatchRepository implements PanacheRepository<MatchResult> {
     }
 
     private Instant matchEvent(long matchId, String ordering) {
-        return find("SELECT m.dateInserted FROM MatchResult m WHERE m.matchId = ?1 AND m.dateInserted IS NOT NULL ORDER BY m.dateInserted " + ordering)
+        return find("SELECT m.dateInserted FROM MatchResult m WHERE m.matchId = ?1 AND m.dateInserted IS NOT NULL ORDER BY m.dateInserted " + ordering, matchId)
                 .project(Instant.class)
                 .firstResultOptional()
                 .orElseThrow(() -> new ApplicationException(
-                        "No events with dateInserted found for match ID: " + matchId, 404));
+                        "No events with dateInserted found", 404));
     }
 
     public List<Long> invalidMatchesId() {
