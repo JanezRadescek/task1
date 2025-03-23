@@ -40,7 +40,7 @@ public class MatchService {
             executorService.submit(this::processQueueItems);
         }
 
-        currentMaxMatchId = matchRepository.getMaxMatchId();
+        currentMaxMatchId = matchRepository.maxMatchId();
     }
 
     @PreDestroy
@@ -48,12 +48,18 @@ public class MatchService {
         executorService.shutdownNow();
     }
 
+    //    Not setting up actual streaming service since probably not the point of the task?
+    // MAIN FUNCTION
     public void ProcessMatch(MatchResultDto matchResultDto) {
+        // put this data into DB as fast as possible
+        // "as fast as possible" comes from putting data in IO thread into queue and process it in separate multiple threads.
+        // correctness/order comes from keeping track of order (timestampDebt) and only appling timestamp if all previous timestamps are settled. If they are not this timestamp will be kept in debt and settled at some latter time.
+        // in a sense data is being processed for as long or short as needed, but we pretend that it was processed for so long time that it keep initial order.
         try {
             if (!timestampDebt.containsKey(matchResultDto.getMatchId())) {
                 timestampDebt.put(matchResultDto.getMatchId(), new MatchLedger());
             }
-            currentMaxMatchId++;
+            currentMaxMatchId++; // Preserves us order, latter we can check if the timestamps order matches ids order. Probably that could be used in implementation too. Not just the test. But now its done with the debtQueue so ¯\_(ツ)_/¯
             var matchResult = new MatchResult(currentMaxMatchId, matchResultDto);
             timestampDebt.get(matchResultDto.getMatchId()).addDebt(new Debt(matchResult.id));
             matchQueue.put(matchResult);
@@ -66,15 +72,26 @@ public class MatchService {
     @Transactional
     public MatchResponse getMatchDetails(String matchId) {
         var matchIdlong = MatchResultDto.parseMatchId(matchId);
-        Instant firstEventTime = matchRepository.getFirstEvent(matchIdlong);
-        Instant lastEventTime = matchRepository.getLastEvent(matchIdlong);
+        Instant firstEventTime = matchRepository.firstMatchEvent(matchIdlong);
+        Instant lastEventTime = matchRepository.lastMatchEvent(matchIdlong);
         return new MatchResponse()
                 .firstEventTime(firstEventTime)
                 .lastEventTime(lastEventTime);
     }
 
-    public Boolean isProcessing() {
+    public boolean isProcessing() {
         return !matchQueue.isEmpty();
+    }
+
+    @Transactional
+    public boolean isValid(){
+        var invalidIds = matchRepository.invalidMatchesId();
+        if(invalidIds.isEmpty()){
+            return true;
+        } else {
+            Log.fatal("Invalid matches found: " + invalidIds);
+            return false;
+        }
     }
 
     @ActivateRequestContext

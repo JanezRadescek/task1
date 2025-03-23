@@ -1,9 +1,7 @@
 package si.janez.resources;
 
 import io.quarkus.logging.Log;
-import io.quarkus.runtime.StartupEvent;
 import jakarta.enterprise.context.ApplicationScoped;
-import jakarta.enterprise.event.Observes;
 import jakarta.inject.Inject;
 import si.janez.api.MatchApi;
 import si.janez.api.model.MatchResponse;
@@ -14,19 +12,6 @@ public class MatchResource implements MatchApi {
 
     @Inject
     MatchService matchService;
-
-    public void startStream(@Observes StartupEvent ev){
-        Log.info("Application is starting, triggering stream...");
-        simulateStream();
-    }
-
-
-//    Setting up kafka, rabbitmq or some other actual streaming service is too much work for the purpose of this task
-    private void simulateStream(){
-
-
-    }
-
 
     @Override
     public MatchResponse apiMatchGet(String matchId) {
@@ -44,4 +29,14 @@ public class MatchResource implements MatchApi {
         return processing;
 
     }
+
+    @Override
+    public Boolean apiMatchValidGet() {
+        Log.info("ApiMatchValidGet");
+        var valid = matchService.isValid();
+        Log.info("ApiMatchValidGet : valid = " + valid);
+        return valid;
+    }
+
+
 }

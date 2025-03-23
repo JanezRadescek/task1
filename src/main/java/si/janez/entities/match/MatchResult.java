@@ -2,11 +2,18 @@ package si.janez.entities.match;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.Table;
 import si.janez.dtos.match.MatchResultDto;
 
 import java.time.Instant;
 
 @Entity
+@Table(indexes = {
+        @Index(name = "idx_match_result_match_id", columnList = "matchId"),
+        @Index(name = "idx_match_result_date_inserted", columnList = "dateInserted"),
+        @Index(name = "idx_match_result_match_id_date_inserted", columnList = "matchId, dateInserted")
+})
 public class MatchResult {
 
 

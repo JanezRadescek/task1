@@ -36,7 +36,8 @@ public class MatchResourceTest {
                 new Thread(() -> {
                     var response = given()
                             .queryParam("matchId", firstMatchId)
-                            .when().get("/api/match")
+                            .when()
+                            .get("/api/match")
                             .then()
                             .statusCode(200)
                             .extract().as(MatchResponse.class);
@@ -63,7 +64,8 @@ public class MatchResourceTest {
             maxProcessTime--;
 
             var processing = given()
-                    .when().get("/api/match/processing")
+                    .when()
+                    .get("/api/match/processing")
                     .then()
                     .statusCode(200)
                     .extract().as(Boolean.class);
@@ -75,6 +77,14 @@ public class MatchResourceTest {
                 long processingTime = endTime - startTime;
                 processingTime /= 1000;
                 Log.info("Processing time: " + processingTime);
+
+                var validProcessing = given()
+                        .when()
+                        .get("/api/match/valid")
+                        .then()
+                        .statusCode(200)
+                        .extract().as(Boolean.class);
+                Assertions.assertTrue(validProcessing);
                 return;
             }
         }
@@ -96,7 +106,8 @@ public class MatchResourceTest {
 
         var response = given()
                 .queryParam("matchId", match.getMatchIdString())
-                .when().get("/api/match")
+                .when()
+                .get("/api/match")
                 .then()
                 .statusCode(200)
                 .extract().as(MatchResponse.class);
@@ -111,7 +122,8 @@ public class MatchResourceTest {
     void ugly() {
         var error = given()
                 .queryParam("matchId", 0)
-                .when().get("/api/match")
+                .when()
+                .get("/api/match")
                 .then()
                 .statusCode(404)
                 .extract().as(Error.class);

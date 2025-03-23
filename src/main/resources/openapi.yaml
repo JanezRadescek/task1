@@ -57,11 +57,25 @@ paths:
             summary: Checks if any match in processing queue
             responses:
                 '200':
-                    description:  match in processing queue
+                    description:  true if any match in processing queue, false otherwise
                     content:
                         application/json:
                             schema:
                                 type: boolean
+
+    /api/match/valid:
+        get:
+            tags:
+                - Match
+            summary: Checks if db is in valid state
+            responses:
+                '200':
+                    description:  true if db is in valid state, false otherwise
+                    content:
+                        application/json:
+                            schema:
+                                type: boolean
+
 
 
 
